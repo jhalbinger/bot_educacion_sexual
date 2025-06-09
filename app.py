@@ -46,7 +46,9 @@ def enviar_a_watson(mensaje, session_id):
         contextos[session_id] = data.get("context", {})
 
         try:
-            return data["output"]["text"][0]
+            # ✅ Unir todas las líneas en una sola respuesta para WhatsApp
+            lineas = data["output"]["text"]
+            return "\n".join(lineas)
         except (KeyError, IndexError):
             return "⚠️ Watson no devolvió una respuesta válida."
     else:

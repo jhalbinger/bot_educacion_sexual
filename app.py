@@ -13,11 +13,12 @@ def index():
 @app.route('/webhook', methods=['POST'])
 def webhook():
     mensaje = request.form.get('Body', '').strip()
-    numero = request.form.get('From', '')
+    numero_completo = request.form.get('From', '')  # Ejemplo: whatsapp:+5491123456789
+    numero_limpio = numero_completo.replace("whatsapp:", "")
 
-    print(f"📨 WhatsApp: {numero} dice: {mensaje}")
+    print(f"📨 WhatsApp: {numero_limpio} dice: {mensaje}")
 
-    respuesta_watson = enviar_a_watson(mensaje, numero)
+    respuesta_watson = enviar_a_watson(mensaje, numero_limpio)
     return f"<Response><Message>{respuesta_watson}</Message></Response>", 200, {'Content-Type': 'text/xml'}
 
 def enviar_a_watson(mensaje, session_id):
@@ -27,6 +28,9 @@ def enviar_a_watson(mensaje, session_id):
 
     # Usar el contexto anterior si existe
     contexto_prev = contextos.get(session_id, {})
+
+    # Agregar el número al contexto como 'telefono'
+    contexto_prev['telefono'] = session_id
 
     payload = {
         "input": {"text": mensaje},

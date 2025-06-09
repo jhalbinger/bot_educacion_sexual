@@ -7,7 +7,7 @@ contextos = {}
 
 @app.route("/")
 def index():
-    return "✅ Microservicio conectado a Watson Assistant v1 con contexto"
+    return "✅ Microservicio conectado a Watson Assistant v1 con soporte de audio"
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
@@ -22,12 +22,12 @@ def webhook():
         print(f"🔊 Audio recibido: {media_url} ({content_type})")
 
         try:
-            # Descargar el archivo de Twilio
+            # Descargar el archivo desde Twilio
             audio_response = requests.get(media_url)
             with open("audio.ogg", "wb") as f:
                 f.write(audio_response.content)
 
-            # Enviar al microservicio
+            # Enviar el archivo al microservicio de transcripción
             with open("audio.ogg", "rb") as audio_file:
                 transcripcion_response = requests.post(
                     "https://transcripcion-ahub.onrender.com/transcripcion",
@@ -35,15 +35,18 @@ def webhook():
                 )
 
             if transcripcion_response.status_code == 200:
-                texto_transcripto = transcripcion_response.json().get("transcription", "")
-                return f"<Response><Message>🎧 Transcripción: {texto_transcripto}</Message></Response>", 200, {'Content-Type': 'text/xml'}
+                texto_transcripto = transcripcion_response.json().get("texto", "")
+                if texto_transcripto.strip():
+                    return f"<Response><Message>🎧 Transcripción: {texto_transcripto}</Message></Response>", 200, {'Content-Type': 'text/xml'}
+                else:
+                    return "<Response><Message>🧐 No pude entender lo que dijiste en el audio.</Message></Response>", 200, {'Content-Type': 'text/xml'}
             else:
                 print("❌ Error transcribiendo:", transcripcion_response.text)
-                return f"<Response><Message>⚠️ Error al transcribir el audio.</Message></Response>", 200, {'Content-Type': 'text/xml'}
+                return "<Response><Message>⚠️ Error al transcribir el audio.</Message></Response>", 200, {'Content-Type': 'text/xml'}
 
         except Exception as e:
-            print("❌ Error interno:", e)
-            return f"<Response><Message>⚠️ Error interno al procesar el audio.</Message></Response>", 200, {'Content-Type': 'text/xml'}
+            print("❌ Excepción al procesar audio:", str(e))
+            return "<Response><Message>⚠️ Ocurrió un error procesando el audio.</Message></Response>", 200, {'Content-Type': 'text/xml'}
 
     else:
         print(f"📨 WhatsApp: {numero_limpio} dice: {mensaje}")

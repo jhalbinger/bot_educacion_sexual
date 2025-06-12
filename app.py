@@ -39,8 +39,9 @@ def webhook():
                 respuesta_json = transcripcion_response.json()
                 texto_transcripto = respuesta_json.get("respuesta", "")
 
+                # 🔄 Si es un dict, extraer el texto plano
                 if isinstance(texto_transcripto, dict):
-                    texto_transcripto = json.dumps(texto_transcripto, indent=2)
+                    texto_transcripto = texto_transcripto.get("respuesta", "")
 
                 if texto_transcripto.strip():
                     return f"<Response><Message>🎧 {texto_transcripto}</Message></Response>", 200, {'Content-Type': 'text/xml'}

@@ -27,17 +27,17 @@ def webhook():
             with open("audio.ogg", "wb") as f:
                 f.write(audio_response.content)
 
-            # Enviar el archivo al microservicio de transcripción
+            # Enviar el archivo al nuevo microservicio de transcripción + respuesta
             with open("audio.ogg", "rb") as audio_file:
                 transcripcion_response = requests.post(
-                    "https://transcripcion-ahub.onrender.com/transcripcion",
+                    "https://transcriptor-respondedor.onrender.com/transcripcion",
                     files={"audio": audio_file}
                 )
 
             if transcripcion_response.status_code == 200:
-                texto_transcripto = transcripcion_response.json().get("texto", "")
+                texto_transcripto = transcripcion_response.json().get("respuesta", "")
                 if texto_transcripto.strip():
-                    return f"<Response><Message>🎧 Transcripción: {texto_transcripto}</Message></Response>", 200, {'Content-Type': 'text/xml'}
+                    return f"<Response><Message>🎧 {texto_transcripto}</Message></Response>", 200, {'Content-Type': 'text/xml'}
                 else:
                     return "<Response><Message>🧐 No pude entender lo que dijiste en el audio.</Message></Response>", 200, {'Content-Type': 'text/xml'}
             else:

@@ -1,6 +1,7 @@
 from flask import Flask, request
 import requests
 import os
+import json
 
 app = Flask(__name__)
 contextos = {}
@@ -27,7 +28,7 @@ def webhook():
             with open("audio.ogg", "wb") as f:
                 f.write(audio_response.content)
 
-            # Enviar el archivo al nuevo microservicio de transcripción + respuesta
+            # Enviar el archivo al microservicio de transcripción + respuesta
             with open("audio.ogg", "rb") as audio_file:
                 transcripcion_response = requests.post(
                     "https://transcriptor-respondedor.onrender.com/transcripcion",
@@ -35,7 +36,12 @@ def webhook():
                 )
 
             if transcripcion_response.status_code == 200:
-                texto_transcripto = transcripcion_response.json().get("respuesta", "")
+                respuesta_json = transcripcion_response.json()
+                texto_transcripto = respuesta_json.get("respuesta", "")
+
+                if isinstance(texto_transcripto, dict):
+                    texto_transcripto = json.dumps(texto_transcripto, indent=2)
+
                 if texto_transcripto.strip():
                     return f"<Response><Message>🎧 {texto_transcripto}</Message></Response>", 200, {'Content-Type': 'text/xml'}
                 else:
@@ -76,3 +82,6 @@ def enviar_a_watson(mensaje, session_id):
     else:
         print("❌ Error al contactar a Watson:", response.status_code)
         return "⚠️ Ocurrió un error al contactar al bot."
+
+if __name__ == "__main__":
+    app.run()

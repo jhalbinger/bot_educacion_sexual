@@ -44,7 +44,7 @@ def webhook():
                     texto_transcripto = texto_transcripto.get("respuesta", "")
 
                 if texto_transcripto.strip():
-                    return f"<Response><Message>🎧 {texto_transcripto}</Message></Response>", 200, {'Content-Type': 'text/xml'}
+                    return f"<Response><Message>{texto_transcripto}</Message></Response>", 200, {'Content-Type': 'text/xml'}
                 else:
                     return "<Response><Message>🧐 No pude entender lo que dijiste en el audio.</Message></Response>", 200, {'Content-Type': 'text/xml'}
             else:
